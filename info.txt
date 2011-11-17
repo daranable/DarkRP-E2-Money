@@ -1,0 +1,9 @@
+"AddonInfo"
+{
+	"name"        "DarkRP Money E2 Functions"
+	"version"     "0.1"
+	"author_name" "Daranable"
+	"author_url"  ""
+	"info"        "Several functions for handling of money with e2 in DarkRP"
+	"override"    "0"
+}
