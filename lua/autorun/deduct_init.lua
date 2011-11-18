@@ -4,4 +4,5 @@ if SERVER then
 	-- this file
 	AddCSLuaFile("autorun/deduct_init.lua")
 	
+	include( "darkrp_scripting.lua" )
 end
