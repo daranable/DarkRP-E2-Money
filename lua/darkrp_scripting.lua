@@ -39,3 +39,20 @@ function darkrp_scripting.moneyAmount( money )
 	
 	return money.Amount
 end
+
+--- Returns a table containing all things the player can buy.
+--@param person the entity of the player requesting the table
+--@return table containing all entities the player can buy
+function darkrp_scripting.merchandise( person )
+	if ( !validEntity( person ) or person:GetClass() != "player" ) then return end
+	
+	for key,value in pairs(CustomShipments) do
+		print( key )
+		print( value )
+		
+	end
+end
+
+--- Allows a player to buy a shipment
+--@param name the name of the gun they want to buy.
+--@param 
