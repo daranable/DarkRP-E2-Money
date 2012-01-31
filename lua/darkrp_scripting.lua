@@ -4,6 +4,8 @@
 -- The libraries global table
 darkrp_scripting = { }
 
+local P = darkrp_scripting
+
 ------------------------------------------------------------------------
 -- Internal functions                                                 --
 ------------------------------------------------------------------------
@@ -83,7 +85,7 @@ end
 --- Returns the amount of money a player entity has
 -- @param person the player entity that you want to check the money of
 -- @return number the amount of money that person has
-function darkrp_scripting.money( person )
+function P.money( person )
 	if !validEntity(person) or 
 			person:GetClass() ~= "player" then 
 		return -1 
@@ -95,7 +97,7 @@ end
 --- Returns the amount of money in a spawned money entity
 -- @param money then entity of the money piece
 -- @return number returns the amount of money
-function darkrp_scripting.moneyAmount( money )
+function P.moneyAmount( money )
 	if !validEntity( money ) 
 			or money:GetClass() ~= "spawned_money" then 
 		return -1 
@@ -107,7 +109,7 @@ end
 --- Returns the conents of a shipment entity
 -- @param shipment the entity of the shipment your checking
 -- @return string returns the name of the type of gun in it
-function darkrp_scripting.shipmentContents( shipment )
+function P.shipmentContents( shipment )
 	if !validEntity(shipment) 
 			or shipment:GetClass() ~= "spawned_shipment" then 
 		return "" 
@@ -119,7 +121,7 @@ end
 --- Returns the number of guns left in a given shipment
 -- @param shipment the entity of the shipment your checking
 -- @return number returns the number of guns in the shipment
-function darkrp_scripting.shipmentAmount( shipment )
+function P.shipmentAmount( shipment )
 	if !validEntity(shipment) 
 			or shipment:GetClass() ~= "spawned_shipment" then 
 		return -1 
@@ -132,7 +134,7 @@ end
 -- @param person the entity of the player requesting the table
 -- @return table containing a number indexed list of the names of the guns a 
 --         player can buy.
-function darkrp_scripting.merchandise( person )
+function P.merchandise( person )
 	if !validEntity( person ) 
 			or person:GetClass() ~= "player" then 
 		return 
@@ -166,7 +168,7 @@ end
 --   shipprice = Number      (How much a shipment costs if applicable)
 --   price     = Number      (Cost of a single gun if applicable)
 --   model     = String      (Model of the item)
-function darkrp_scripting.guninfo( name )
+function P.guninfo( name )
 	local info = { }
 	
 	local idx, gun = getGunTable( name )
@@ -186,7 +188,7 @@ end
 -- @param pos the position to spawn the shipment at
 -- @param ang the angle to spawn the shipment at
 -- @returns true if it succeeds, and nil, error if it fails.
-function darkrp_scripting.buyShipment( buyer, name, pos, ang )
+function P.buyShipment( buyer, name, pos, ang )
 	local idx, gun = getGunTable( name )
 	if !gun then return nil, "not a valid gun name" end
 	
@@ -215,7 +217,7 @@ end
 -- @param pos the position to spawn the gun at
 -- @param ang the angle to spawn the gun at
 -- @returns true if it succeeds, and nil, error if it fails.
-function darkrp_scripting.buyGun( buyer, name, pos, ang )
+function P.buyGun( buyer, name, pos, ang )
 	local idx, gun = getGunTable( name )
 	if not gun then return nil, "not a valid gun name" end
 end
