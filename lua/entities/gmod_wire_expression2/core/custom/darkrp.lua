@@ -1,27 +1,25 @@
 -- E2's default table format
 local DEFAULT = {n={},ntypes={},s={},stypes={},size=0,istable=true,depth=0}
 
-local P = darkrp_scripting
-
 -- Returns the amount of money a player has
 e2function number entity:money()
-	return P.money( this )
+	return darkrp_scripting.money( this )
 end
 
 e2function string entity:shipmentContents( )
-	return P.shipmentContents( this )
+	return darkrp_scripting.shipmentContents( this )
 end
 
 e2function number entity:shipmentAmount( )
-	return P.shipmentAmount( this )
+	return darkrp_scripting.shipmentAmount( this )
 end
 
 e2function number entity:moneyAmount( )
-	return P.moneyAmount( this )
+	return darkrp_scripting.moneyAmount( this )
 end
 
 e2function array entity:merchandise( )
-	return P.merchandise( this )
+	return darkrp_scripting.merchandise( this )
 end
 
 e2function table guninfo( string name )

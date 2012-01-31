@@ -1,7 +1,6 @@
 local darkrp_lib, _ = SF.Libraries.Register("darkrp")
 
 local unwrap, wrap = SF.Entities.Unwrap, SF.Entities.Wrap
-local P = darkrp_scripting
 
 function darkrp_lib.money( person )
 	return darkrp_scripting.money( unwrap( person ) )
