@@ -23,3 +23,7 @@ end
 e2function array entity:merchandise( )
 	return P.merchandise( this )
 end
+
+e2function table guninfo( string name )
+	
+end
