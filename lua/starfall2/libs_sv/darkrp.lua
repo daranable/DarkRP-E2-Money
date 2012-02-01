@@ -32,5 +32,32 @@ function darkrp_lib.buyShipment( name, pos, ang )
 	SF.CheckType( pos, "Vector" )
 	SF.CheckType( ang, "Angle" )
 	
-	return P.buyShipment( SF.instance.player, name, pos, ang )
+	local ret, err = P.buyShipment( SF.instance.player, name, pos, ang )
+	
+	if type( ret ) == "Entity" then
+		return wrap ( ret )
+	end
+	
+	return nil, err
+end
+
+function darkrp_lib.buyGun( name, pos )
+	SF.CheckType( name, "string" )
+	SF.CheckType( pos, "Vector" )
+	
+	local ret, err = P.buyGun( SF.instance.player, name, pos )
+	
+	if type( ret ) == "Entity" then
+		return wrap ( ret )
+	end
+	
+	return nil, err
+end
+
+function darkrp_lib.extractGun( shipment, pos )
+	--SF.CheckType( shipment, "Entity" )
+	SF.CheckType( pos, "Vector" )
+	
+	
+	return P.extractGun( SF.instance.player, unwrap( shipment ), pos )
 end

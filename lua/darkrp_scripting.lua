@@ -30,8 +30,8 @@ end
 -- @param name name of the gun you want to spawn
 -- @param pos position to spawn the gun at
 -- @param ang angle to spawn the gun at
--- @returns true if it succeeds, and nil, error if it fails.
-local function spawnGun( gun, pos, ang )
+-- @returns entity if it succeeds, and nil, error if it fails.
+local function spawnGun( gun, pos )
 	local model = gun["model"]
 	local class = gun["entity"]
 	
@@ -40,12 +40,11 @@ local function spawnGun( gun, pos, ang )
 	weapon.weaponclass = class
 	weapon.ShareGravgun = true
 	weapon:SetPos( pos )
-	weapon:SetAngle( ang )
 	weapon.nodupe = true
 	weapon:Spawn()
 	
 	if ValidEntity( weapon ) then 
-		return true 
+		return weapon
 	end
 end
 
@@ -53,7 +52,7 @@ end
 -- @param name name of the gun you want to spawn a shipment of
 -- @param pos position to spawn the shipment at
 -- @param ang angle to spawn the shipment at
--- @returns true if it succeeds, and nil, error if it fails
+-- @returns entity if it succeeds, and nil, error if it fails
 local function spawnShipment( ply, gun, pos, ang, idx )
 	local crate = ents.Create("spawned_shipment")
 	crate.SID = ply.SID
@@ -74,7 +73,7 @@ local function spawnShipment( ply, gun, pos, ang, idx )
 	if phys and phys:IsValid() then phys:Wake() end
 
 	if ValidEntity( crate ) then
-		return true
+		return crate
 	end
 end
 
@@ -86,7 +85,7 @@ end
 -- @param person the player entity that you want to check the money of
 -- @return number the amount of money that person has
 function P.money( person )
-	if !validEntity(person) or 
+	if not validEntity(person) or 
 			person:GetClass() ~= "player" then 
 		return -1 
 	end
@@ -98,7 +97,7 @@ end
 -- @param money then entity of the money piece
 -- @return number returns the amount of money
 function P.moneyAmount( money )
-	if !validEntity( money ) 
+	if not validEntity( money ) 
 			or money:GetClass() ~= "spawned_money" then 
 		return -1 
 	end
@@ -110,7 +109,7 @@ end
 -- @param shipment the entity of the shipment your checking
 -- @return string returns the name of the type of gun in it
 function P.shipmentContents( shipment )
-	if !validEntity(shipment) 
+	if not validEntity(shipment) 
 			or shipment:GetClass() ~= "spawned_shipment" then 
 		return "" 
 	end
@@ -122,7 +121,7 @@ end
 -- @param shipment the entity of the shipment your checking
 -- @return number returns the number of guns in the shipment
 function P.shipmentAmount( shipment )
-	if !validEntity(shipment) 
+	if not validEntity(shipment) 
 			or shipment:GetClass() ~= "spawned_shipment" then 
 		return -1 
 	end
@@ -135,7 +134,7 @@ end
 -- @return table containing a number indexed list of the names of the guns a 
 --         player can buy.
 function P.merchandise( person )
-	if !validEntity( person ) 
+	if not validEntity( person ) 
 			or person:GetClass() ~= "player" then 
 		return 
 	end
@@ -173,12 +172,12 @@ function P.guninfo( name )
 	
 	local idx, gun = getGunTable( name )
 	
-	info["shipment"]  = !gun["noship"]
-	info["single"]    =  gun["seperate"]
-	info["count"]     =  gun["amount"]
-	info["shipprice"] =  gun["price"]
-	info["price"]     =  gun["pricesep"]
-	info["model"]     =  gun["model"]
+	info["shipment"]  = not gun["noship"]
+	info["single"]    =     gun["seperate"]
+	info["count"]     =     gun["amount"]
+	info["shipprice"] =     gun["price"]
+	info["price"]     =     gun["pricesep"]
+	info["model"]     =     gun["model"]
 	
 	return info
 end
@@ -190,7 +189,7 @@ end
 -- @returns true if it succeeds, and nil, error if it fails.
 function P.buyShipment( buyer, name, pos, ang )
 	local idx, gun = getGunTable( name )
-	if !gun then return nil, "not a valid gun name" end
+	if not gun then return nil, "not a valid gun name" end
 	
 	local player_team = buyer:Team()
 	local allowed = false
@@ -204,10 +203,12 @@ function P.buyShipment( buyer, name, pos, ang )
 	if not allowed then return nil, "you are not allowed to buy that gun" end
 	
 	if buyer:CanAfford( gun.price ) and not gun.noship then
-		local succeed = spawnShipment( buyer, gun, pos, ang, idx )
+		local shipment = spawnShipment( buyer, gun, pos, ang, idx )
 		
-		if succeed then
+		if shipment then
 			buyer:AddMoney( -gun.price )
+			print( "success" )
+			return shipment
 		end
 	end
 end
@@ -216,8 +217,61 @@ end
 -- @param name the name of the gun you want to buy
 -- @param pos the position to spawn the gun at
 -- @param ang the angle to spawn the gun at
--- @returns true if it succeeds, and nil, error if it fails.
-function P.buyGun( buyer, name, pos, ang )
+-- @returns shipment if it succeeds, and nil, error if it fails.
+function P.buyGun( buyer, name, pos )
 	local idx, gun = getGunTable( name )
 	if not gun then return nil, "not a valid gun name" end
+	
+	local player_team = buyer:Team()
+	local allowed = false
+	
+	for _,id in pairs( gun.allowed ) do
+		if id == player_team then
+			allowed = true
+		end
+	end
+	
+	if not allowed then return nil, "you are not allowed to buy that gun" end
+	
+	if buyer:CanAfford( gun.price ) and gun.seperate then
+		local gun = spawnGun( gun, pos )
+		
+		if gun then
+			buyer:AddMoney( -gun.pricesep )
+			return gun
+		end
+	end
+end
+
+--- Extracts a gun from a shipment you own
+-- @param extractor the entity of the palyer extracting the gun
+-- @param shipment the entity of the shipment you want to extract from, must be owned by you.
+-- @param pos the vector position you want the gun extracted to
+function P.extractGun( extractor, shipment, pos )
+	if not validEntity(shipment) 
+			or shipment:GetClass() ~= "spawned_shipment" then 
+		return nil, "not a valid shipment"
+	end
+	
+	if extractor.SID ~= shipment.SID then
+		return nil, "you are not allowed to extract from that shipment"
+	end
+	
+	local count = shipment.dt.count
+	local contents = shipment.dt.contents
+	local gun
+	
+	for k,v in pairs(CustomShipments) do
+		if k == contents then
+			gun = v
+			break
+		end
+	end
+	
+	local spawned_gun = spawnGun( gun, pos )
+	
+	if gun then
+		shipment.dt.count = count - 1
+		return spawned_gun
+	end
 end
