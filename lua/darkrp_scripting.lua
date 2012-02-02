@@ -275,3 +275,49 @@ function P.extractGun( extractor, shipment, pos )
 		return spawned_gun
 	end
 end
+
+--- Takes money from your supply and gives it to another player
+-- @param giver the entity of the person giving money
+-- @param receiver the entity of the player your giving money to
+-- @param amount the amount you want to give to the player
+-- @returns true if it succeeded, nil, error if it fails
+function P.giveMoney( giver, receiver, amount )
+	if not validEntity(giver) or 
+			giver:GetClass() ~= "player" then 
+		return nil, "giver not a valid player entity"
+	end
+	if not validEntity(receiver) or 
+			receiver:GetClass() ~= "player" then 
+		return nil, "receiver not a valid player entity"
+	end
+	
+	if type( amount ) ~= "number" then 
+		return nil, "amount must be a number" 
+	end
+	
+	if amount < 0 then
+		return nil, "amount must be a positive number"
+	end
+	
+	if not giver:CanAfford( amount ) then
+		return nil, "you can not afford to give that much"
+	end
+	
+	giver:AddMoney( -amount )
+	Notify( 
+		giver, 
+		4, 
+		4, 
+		"Your chip has given $" .. amount .. " to " .. receiver:GetName() .. "."
+	)
+	
+	receiver:AddMoney( amount )
+	Notify( 
+		receiver, 
+		4, 
+		4, 
+		receiver:GetName() .. "'s chip has given you $" .. amount .. "."
+	)
+	
+	return true
+end
