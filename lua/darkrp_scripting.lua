@@ -6,6 +6,9 @@ darkrp_scripting = { }
 
 local P = darkrp_scripting
 
+local ask_limits = { }
+local requests = { }
+
 ------------------------------------------------------------------------
 -- Internal functions                                                 --
 ------------------------------------------------------------------------
@@ -321,3 +324,107 @@ function P.giveMoney( giver, receiver, amount )
 	
 	return true
 end
+
+--- Displays a derma menu on another player's screen asking them to 
+-- give you money.  You may only ask someone on the server once every five
+-- minutes.  
+-- If a person declines your request you may not ask them again for one
+-- minute.
+-- @param chip entity of the processor making request
+-- @param asker entity of the person asking for money
+-- @param target entity of the person being asked
+-- @param amount how much you would like
+-- @param message a short message to accompany the request
+-- @param cb a function to be called with result
+function askForMoney( chip, asker, target, amount, message, cb )
+	if not validEntity(asker) or 
+			asker:GetClass() ~= "player" then 
+		return nil, "asker not a valid player entity"
+	end
+	if not validEntity(target) or 
+			target:GetClass() ~= "player" then 
+		return nil, "target not a valid player entity"
+	end
+	
+	if amount < 1 then
+		return nil, "amount must be greater than 0"
+	end
+	
+	if not target:CanAfford( amount ) then
+		return nil, "target can not afford that much money"
+	end
+	
+	if #message > 200 then
+		return nil, "message must be under 200 charectors long"
+	end
+	
+	local curtime = CurTime()
+	local limits = ask_limits[ asker.SID ]
+	local playerask = ask_limits[ target.SID ]
+	
+	if limits == nil then
+		limits = { }
+		ask_limits[ asker.SID ] = { }
+		limits[ "_next_ask" ] = curtime - 20
+	end
+	
+	if curtime < limits["_next_ask"] then
+		return nil, "you can not ask for money again this soon"
+	end
+	
+	if playerask == true then
+		return nil, "you are all ready asking that player for money"
+	end
+	
+	if curtime < playerask and playerask ~= nil then
+		return nil, "you can not ask that player again so soon"
+	end
+	
+	limits[ target.SID ]  = true
+	limits[ "_next_ask" ] = CurTime() + 5
+	
+	local target_requests = requests[ target.SID ]
+	
+	if target_requests == nil then
+		target_requests = { }
+		requests[ target.SID ] = target_requests
+	end
+	
+	local requestnum = #target_requests + 1
+	local request = { }
+	target_requests[ requestnum ] = request
+	
+	request[ "asker" ]  = asker
+	request[ "amount" ] = amount
+	request[ "requester" ] = chip
+	request[ "cb" ] = cb
+	
+	umsg.Start( "money_request", target )
+		umsg.Entity( asker )
+		umsg.Long( requestnum )
+		umsg.Long( amount )
+		umsg.String( message )
+	umsg.End( )
+end
+
+-- Handle requst results
+local function money_response( person, cmd, args )
+	local response = args[ 1 ]
+	local request = requests[ person.SID ][ tonumber( args[ 2 ] ) ]
+	
+	local limits = ask_limits[ request[ "asker" ].SID ]
+	local curtime = CurTime( )
+	
+	if response == "cancel" then
+		ask_limits[ person.SID ] = curtime
+		
+	elseif response == "decline" then
+		ask_limits[ person.SID ] = curtime + 60
+		
+	elseif response == "accept" then
+		ask_limits[ person.SID ] = curtime + 5
+		
+	end
+	
+end
+concommand.Add( "drp_money_request", money_response )
