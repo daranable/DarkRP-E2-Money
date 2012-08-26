@@ -80,6 +80,7 @@ local function spawnShipment( ply, gun, pos, ang, idx )
 	end
 end
 
+
 ------------------------------------------------------------------------
 -- Library Functions                                                  --
 ------------------------------------------------------------------------
@@ -417,13 +418,15 @@ local function money_response( person, cmd, args )
 	
 	if response == "cancel" then
 		ask_limits[ person.SID ] = curtime
-		
+		request[ "response" ] = 0
+		print( "cancel" )
 	elseif response == "decline" then
 		ask_limits[ person.SID ] = curtime + 60
-		
+		request[ "response" ] = -1
+		print( "decline" )
 	elseif response == "accept" then
 		ask_limits[ person.SID ] = curtime + 5
-		
+		print( "accept" )
 	end
 	
 end
