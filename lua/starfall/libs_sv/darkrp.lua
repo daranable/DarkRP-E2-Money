@@ -68,3 +68,14 @@ function darkrp_lib.giveMoney( receiver, amount )
 	
 	return P.giveMoney( SF.instance.player, unwrap( receiver ), amount )
 end
+
+function darkrp_lib.askForMoney( target, amount, cb )
+	SF.CheckType( target, SF.Players.Metatable );
+	SF.CheckType( amount, "number" );
+	SF.CheckType( cb, "function" );
+	
+	local target = SF.Players.Unwrap( target );
+	
+	P.askForMoney( SF.instance.data.entity, 
+			SF.instance.player, target, amount, cb );
+end
