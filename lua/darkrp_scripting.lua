@@ -276,6 +276,9 @@ function P.extractGun( extractor, shipment, pos )
 	
 	if gun then
 		shipment.dt.count = count - 1
+		if shipment.dt.count == 0 then
+			shipment:Remove()
+		end
 		return spawned_gun
 	end
 end
@@ -337,7 +340,7 @@ end
 -- @param amount how much you would like
 -- @param message a short message to accompany the request
 -- @param cb a function to be called with result
-function askForMoney( chip, asker, target, amount, message, cb )
+function P.askForMoney( chip, asker, target, amount, cb )
 	if not validEntity(asker) or 
 			asker:GetClass() ~= "player" then 
 		return nil, "asker not a valid player entity"
@@ -400,11 +403,10 @@ function askForMoney( chip, asker, target, amount, message, cb )
 	request[ "requester" ] = chip
 	request[ "cb" ] = cb
 	
-	umsg.Start( "money_request", target )
+	umsg.Start( "drpumsg_money_request", target )
 		umsg.Entity( asker )
 		umsg.Long( requestnum )
 		umsg.Long( amount )
-		umsg.String( message )
 	umsg.End( )
 end
 
@@ -419,14 +421,14 @@ local function money_response( person, cmd, args )
 	if response == "cancel" then
 		ask_limits[ person.SID ] = curtime
 		request[ "response" ] = 0
-		print( "cancel" )
+		MsgN( "cancel" )
 	elseif response == "decline" then
-		ask_limits[ person.SID ] = curtime + 60
+		ask_limits[ person.SID ] = curtime + 20
 		request[ "response" ] = -1
-		print( "decline" )
+		MsgN( "decline" )
 	elseif response == "accept" then
 		ask_limits[ person.SID ] = curtime + 5
-		print( "accept" )
+		MsgN( "accept" )
 	end
 	
 end
