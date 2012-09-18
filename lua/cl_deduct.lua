@@ -1,15 +1,14 @@
-function openRequestMenu( data )
+local function openRequestMenu( data )
 	local asker = data:ReadEntity()
 	local requestnum = data:ReadLong()
 	local amount = data:ReadLong()
-	local message = data:ReadString()
 	
 	local DeductFrame = vgui.Create( "DFrame" )
 	DeductFrame:SetSize( 250,  200 )
 	DeductFrame:SetPos( ( ScrW() / 2 ) - 125, ( ScrH() / 2 ) - 75 )
 	DeductFrame:SetTitle( asker:Nick() .. " is asking you for money" )
 	DeductFrame:SetVisible( true )
-	DeductFrame:ShowCloseButton( true )
+	DeductFrame:ShowCloseButton( false )
 	DeductFrame:MakePopup()
 	
 	local DeductLabel = Label(
@@ -39,4 +38,4 @@ function openRequestMenu( data )
 		DeductFrame:Close()
 	end
 end
-usermessage.Hook( "e2deduct", openRequestMenu )
+usermessage.Hook( "drpumsg_money_request", openRequestMenu )
