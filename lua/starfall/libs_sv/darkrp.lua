@@ -74,8 +74,10 @@ function darkrp_lib.askForMoney( target, amount, cb )
 	SF.CheckType( amount, "number" );
 	SF.CheckType( cb, "function" );
 	
-	local target = SF.Players.Unwrap( target );
+	target = SF.Entities.Unwrap( target );
 	
-	P.askForMoney( SF.instance.data.entity, 
+	local _, err = P.askForMoney( SF.instance.data.entity, 
 			SF.instance.player, target, amount, cb );
+			
+	MsgN( err );
 end

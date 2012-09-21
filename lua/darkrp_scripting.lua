@@ -358,17 +358,13 @@ function P.askForMoney( chip, asker, target, amount, cb )
 		return nil, "target can not afford that much money"
 	end
 	
-	if #message > 200 then
-		return nil, "message must be under 200 charectors long"
-	end
-	
 	local curtime = CurTime()
-	local limits = ask_limits[ asker.SID ]
-	local playerask = ask_limits[ target.SID ]
+	local limits = ask_limits[ asker:SteamID() ]
+	local playerask = ask_limits[ target:SteamID()  ]
 	
 	if limits == nil then
 		limits = { }
-		ask_limits[ asker.SID ] = { }
+		ask_limits[ asker:SteamID()  ] = limits
 		limits[ "_next_ask" ] = curtime - 20
 	end
 	
@@ -380,28 +376,25 @@ function P.askForMoney( chip, asker, target, amount, cb )
 		return nil, "you are all ready asking that player for money"
 	end
 	
-	if curtime < playerask and playerask ~= nil then
-		return nil, "you can not ask that player again so soon"
-	end
-	
-	limits[ target.SID ]  = true
+	limits[ target:SteamID()  ]  = true
 	limits[ "_next_ask" ] = CurTime() + 5
 	
 	local target_requests = requests[ target.SID ]
 	
 	if target_requests == nil then
 		target_requests = { }
-		requests[ target.SID ] = target_requests
+		requests[ target:SteamID()  ] = target_requests
 	end
 	
 	local requestnum = #target_requests + 1
 	local request = { }
 	target_requests[ requestnum ] = request
 	
-	request[ "asker" ]  = asker
-	request[ "amount" ] = amount
-	request[ "requester" ] = chip
-	request[ "cb" ] = cb
+	request.asker  = asker
+	request.amount = amount
+	request.requester = chip
+	request.target = target
+	request.cb = cb
 	
 	umsg.Start( "drpumsg_money_request", target )
 		umsg.Entity( asker )
@@ -413,22 +406,26 @@ end
 -- Handle requst results
 local function money_response( person, cmd, args )
 	local response = args[ 1 ]
-	local request = requests[ person.SID ][ tonumber( args[ 2 ] ) ]
+	local request = requests[ person:SteamID()  ][ tonumber( args[ 2 ] ) ]
 	
-	local limits = ask_limits[ request[ "asker" ].SID ]
+	local limits = ask_limits[ request.asker:SteamID() ]
 	local curtime = CurTime( )
 	
 	if response == "cancel" then
-		ask_limits[ person.SID ] = curtime
-		request[ "response" ] = 0
-		MsgN( "cancel" )
+		request.response = 0
+		
+		
 	elseif response == "decline" then
-		ask_limits[ person.SID ] = curtime + 20
-		request[ "response" ] = -1
-		MsgN( "decline" )
+		request.response = -1
+		
+		
 	elseif response == "accept" then
-		ask_limits[ person.SID ] = curtime + 5
-		MsgN( "accept" )
+		request.response = 1
+		
+		
+		
+		person:print( "You have payed $" .. response.amount .. "to " ..
+				response.asker:Nick() .. "." )
 	end
 	
 end
