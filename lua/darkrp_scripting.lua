@@ -46,7 +46,7 @@ local function spawnGun( gun, pos )
 	weapon.nodupe = true
 	weapon:Spawn()
 	
-	if ValidEntity( weapon ) then 
+	if IsValid( weapon ) then 
 		return weapon
 	end
 end
@@ -75,7 +75,7 @@ local function spawnShipment( ply, gun, pos, ang, idx )
 	local phys = crate:GetPhysicsObject()
 	if phys and phys:IsValid() then phys:Wake() end
 
-	if ValidEntity( crate ) then
+	if IsValid( crate ) then
 		return crate
 	end
 end
@@ -89,7 +89,7 @@ end
 -- @param person the player entity that you want to check the money of
 -- @return number the amount of money that person has
 function P.money( person )
-	if not validEntity(person) or 
+	if not IsValid(person) or 
 			person:GetClass() ~= "player" then 
 		return -1 
 	end
@@ -101,7 +101,7 @@ end
 -- @param money then entity of the money piece
 -- @return number returns the amount of money
 function P.moneyAmount( money )
-	if not validEntity( money ) 
+	if not IsValid( money ) 
 			or money:GetClass() ~= "spawned_money" then 
 		return -1 
 	end
@@ -113,7 +113,7 @@ end
 -- @param shipment the entity of the shipment your checking
 -- @return string returns the name of the type of gun in it
 function P.shipmentContents( shipment )
-	if not validEntity(shipment) 
+	if not IsValid(shipment) 
 			or shipment:GetClass() ~= "spawned_shipment" then 
 		return "" 
 	end
@@ -125,7 +125,7 @@ end
 -- @param shipment the entity of the shipment your checking
 -- @return number returns the number of guns in the shipment
 function P.shipmentAmount( shipment )
-	if not validEntity(shipment) 
+	if not IsValid(shipment) 
 			or shipment:GetClass() ~= "spawned_shipment" then 
 		return -1 
 	end
@@ -138,7 +138,7 @@ end
 -- @return table containing a number indexed list of the names of the guns a 
 --         player can buy.
 function P.merchandise( person )
-	if not validEntity( person ) 
+	if not IsValid( person ) 
 			or person:GetClass() ~= "player" then 
 		return 
 	end
@@ -252,7 +252,7 @@ end
 -- @param shipment the entity of the shipment you want to extract from, must be owned by you.
 -- @param pos the vector position you want the gun extracted to
 function P.extractGun( extractor, shipment, pos )
-	if not validEntity(shipment) 
+	if not IsValid(shipment) 
 			or shipment:GetClass() ~= "spawned_shipment" then 
 		return nil, "not a valid shipment"
 	end
@@ -289,11 +289,11 @@ end
 -- @param amount the amount you want to give to the player
 -- @returns true if it succeeded, nil, error if it fails
 function P.giveMoney( giver, receiver, amount )
-	if not validEntity(giver) or 
+	if not IsValid(giver) or 
 			giver:GetClass() ~= "player" then 
 		return nil, "giver not a valid player entity"
 	end
-	if not validEntity(receiver) or 
+	if not IsValid(receiver) or 
 			receiver:GetClass() ~= "player" then 
 		return nil, "receiver not a valid player entity"
 	end
@@ -341,11 +341,11 @@ end
 -- @param message a short message to accompany the request
 -- @param cb a function to be called with result
 function P.askForMoney( chip, asker, target, amount, cb )
-	if not validEntity(asker) or 
+	if not IsValid(asker) or 
 			asker:GetClass() ~= "player" then 
 		return nil, "asker not a valid player entity"
 	end
-	if not validEntity(target) or 
+	if not IsValid(target) or 
 			target:GetClass() ~= "player" then 
 		return nil, "target not a valid player entity"
 	end
@@ -379,7 +379,7 @@ function P.askForMoney( chip, asker, target, amount, cb )
 	limits[ target:SteamID()  ]  = true
 	limits[ "_next_ask" ] = CurTime() + 5
 	
-	local target_requests = requests[ target.SID ]
+	local target_requests = requests[ target:SteamID() ]
 	
 	if target_requests == nil then
 		target_requests = { }
@@ -403,12 +403,20 @@ function P.askForMoney( chip, asker, target, amount, cb )
 	umsg.End( )
 end
 
+local function find_player_by_steamid( steamid )
+	
+end
+
 -- Handle requst results
 local function money_response( person, cmd, args )
 	local response = args[ 1 ]
-	local request = requests[ person:SteamID()  ][ tonumber( args[ 2 ] ) ]
+	local requestnum = tonumber( args[2] )
+	local asker = Player( tonumber( args[3] ) )
+	local request = requests[ asker:SteamID()  ]
+	request = request[ requestnum ]
 	
-	local limits = ask_limits[ request.asker:SteamID() ]
+	local cb = request.cb
+	local limits = ask_limits[ asker:SteamID() ]
 	local curtime = CurTime( )
 	
 	if response == "cancel" then
@@ -422,10 +430,17 @@ local function money_response( person, cmd, args )
 	elseif response == "accept" then
 		request.response = 1
 		
+		local amount = request.amount
 		
+		person:AddMoney( -amount )
+		asker:AddMoney( amount )
 		
-		person:ChatPrint( "You have payed $" .. tostring( response.amount ) .. "to " ..
-				response.asker:Nick() .. "." )
+		local message = "You have payed $" .. tostring( amount ) .. 
+				" to " .. asker:Nick() .. "."
+		person:ChatPrint( message )
+		
+		message = person:Nick() .. " has payed you $" .. amount .. "."
+		asker:ChatPrint( message )
 	end
 	
 end
