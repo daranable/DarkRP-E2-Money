@@ -403,16 +403,12 @@ function P.askForMoney( chip, asker, target, amount, cb )
 	umsg.End( )
 end
 
-local function find_player_by_steamid( steamid )
-	
-end
-
 -- Handle requst results
 local function money_response( person, cmd, args )
 	local response = args[ 1 ]
 	local requestnum = tonumber( args[2] )
 	local asker = Player( tonumber( args[3] ) )
-	local request = requests[ asker:SteamID()  ]
+	local request = requests[ person:SteamID() ]
 	request = request[ requestnum ]
 	
 	local cb = request.cb
