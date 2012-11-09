@@ -124,11 +124,12 @@ local function money_response()
 	
 end
 
-e2function void entity:askForMoney( number amount )
+e2function string entity:askForMoney( number amount )
 	local _, err = P.askForMoney( self.entity, self.entity.player, this, 
 			amount, money_response )
 	
 	if err then
-		error( err )
+		return err
 	end	
+	return ""
 end
