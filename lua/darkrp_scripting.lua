@@ -424,7 +424,7 @@ local function money_response( person, cmd, args )
 		
 		
 		
-		person:print( "You have payed $" .. response.amount .. "to " ..
+		person:ChatPrint( "You have payed $" .. tostring( response.amount ) .. "to " ..
 				response.asker:Nick() .. "." )
 	end
 	
