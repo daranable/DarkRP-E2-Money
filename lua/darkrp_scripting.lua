@@ -311,18 +311,12 @@ function P.giveMoney( giver, receiver, amount )
 	end
 	
 	giver:AddMoney( -amount )
-	Notify( 
-		giver, 
-		4, 
-		4, 
+	giver:ChatPrint(  
 		"Your chip has given $" .. amount .. " to " .. receiver:GetName() .. "."
 	)
 	
 	receiver:AddMoney( amount )
-	Notify( 
-		receiver, 
-		4, 
-		4, 
+	receiver:ChatPrint( 
 		receiver:GetName() .. "'s chip has given you $" .. amount .. "."
 	)
 	
