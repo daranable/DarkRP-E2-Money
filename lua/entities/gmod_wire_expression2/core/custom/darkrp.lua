@@ -4,6 +4,8 @@
 -- E2's default table format
 local DEFAULT = {n={},ntypes={},s={},stypes={},size=0,istable=true,depth=0}
 
+local requests = {}
+
 -- Save global table to a shorter local variable
 local P = darkrp_scripting
 
@@ -34,6 +36,9 @@ local function convertTable( entry )
 		elseif type( value ) == "string" then
 			new = value
 			valtype = "s"
+		elseif type( value ) == "entity" or type( value ) == "player" then
+			new = value
+			valtype = "e"
 		end
 		
 		if type( key ) == "string" then
@@ -120,8 +125,15 @@ e2function void entity:giveMoney( number amount )
 	end
 end
 
-local function money_response() 
+local function money_response( chip, accepted, payer, amount ) 
+	local payment = {}
+	chip.payinfo = payment
 	
+	payment.accepted = accepted
+	payment.payer = payer
+	payment.amount = amount
+	
+	chip:Execute()
 end
 
 e2function string entity:askForMoney( number amount )
@@ -132,4 +144,20 @@ e2function string entity:askForMoney( number amount )
 		return err
 	end	
 	return ""
+end
+
+e2function number payClk()
+	if null ~= self.entity.payinfo then return 1 end
+	
+	return 0
+end
+
+e2function table getPayInfo()
+	if null == self.entity.payinfo then return end
+	
+	local converted = convertTable( self.entity.payinfo )
+	
+	self.payinfo = nil
+	
+	return converted
 end

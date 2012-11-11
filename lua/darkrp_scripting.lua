@@ -416,6 +416,7 @@ local function money_response( person, cmd, args )
 	elseif response == "decline" then
 		request.response = -1
 		
+		cb( request.requester, false, person, request.amount )
 		
 	elseif response == "accept" then
 		request.response = 1
@@ -431,7 +432,8 @@ local function money_response( person, cmd, args )
 		
 		message = person:Nick() .. " has payed you $" .. amount .. "."
 		asker:ChatPrint( message )
+		
+		cb( request.requester, true, person, request.amount )
 	end
-	
 end
 concommand.Add( "drp_money_request", money_response )
