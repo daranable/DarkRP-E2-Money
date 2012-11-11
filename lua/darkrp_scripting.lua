@@ -238,11 +238,11 @@ function P.buyGun( buyer, name, pos )
 	if not allowed then return nil, "you are not allowed to buy that gun" end
 	
 	if buyer:CanAfford( gun.price ) and gun.seperate then
-		local gun = spawnGun( gun, pos )
+		local spawned_gun = spawnGun( gun, pos )
 		
-		if gun then
-			buyer:AddMoney( -gun.pricesep )
-			return gun
+		if spawned_gun then
+			buyer:AddMoney( -1 * gun.pricesep )
+			return spawned_gun
 		end
 	end
 end
