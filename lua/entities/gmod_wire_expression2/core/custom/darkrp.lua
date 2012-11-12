@@ -158,7 +158,7 @@ e2function table getPayInfo()
 	
 	local converted = convertTable( self.entity.payinfo )
 	
-	self.payinfo = nil
+	self.entity.payinfo = nil
 	
 	return converted
 end
