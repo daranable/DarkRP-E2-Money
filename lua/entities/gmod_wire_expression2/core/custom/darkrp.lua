@@ -147,7 +147,8 @@ e2function string entity:askForMoney( number amount )
 end
 
 e2function number payClk()
-	if null ~= self.entity.payinfo then return 1 end
+	if nil ~= self.entity.payinfo and "table" == type( self.entity.payinfo ) 
+			then return 1 end
 	
 	return 0
 end
